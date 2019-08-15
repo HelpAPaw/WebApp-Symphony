@@ -1,0 +1,7 @@
+framework:
+    cache:
+        prefix_seed: helpapaw/helpapaw
+        app: cache.adapter.redis
+        default_redis_provider: redis://localhost
+        system: cache.adapter.redis
+

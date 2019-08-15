@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container">
+        <h4>{{ item.title }}</h4>
+        <p class="mb-0">{{ item.dateSubmitted|date('d.m.Y - H:i') }}</p>
+        <p>{{ item.authorName }}</p>
+
+        <div id="fb-root"></div>
+        <div class="mb-3">
+            <div class="fb-share-button" data-href="{{ url('app.details', {'id': item.id}) }}" data-layout="button" data-size="large"><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u={{ url('app.details', {'id': item.id})|url_encode }}&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">Share</a></div>
+        </div>
+
+        <div class="row">
+            <div class="col-7">
+                {% if item.image is defined and item.image is not null %}
+                    <img src="{{ item.image }}" class="img-fluid"/>
+                {% else %}
+                    Няма снимка
+                {% endif %}
+            </div>
+            <div class="col-5">
+                 <div id="map" style="width: 100%; height: 500px;"></div>
+                    <script>
+                        var mymap = L.map('map').setView([{{ item.latitude }}, {{ item.longitude }}], 17);
+                        var markersGroup = L.featureGroup();
+
+                        var redIcon = new L.Icon({
+                            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        });
+
+                        var orangeIcon = new L.Icon({
+                            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        });
+
+                        var greenIcon = new L.Icon({
+                            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        });
+
+                        mymap.addLayer(markersGroup);
+
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 18,
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(mymap);
+
+                        {% if item.status == 0 %}
+                        {% set icon = 'redIcon' %}
+                        {% elseif item.status == 1 %}
+                        {% set icon = 'orangeIcon' %}
+                        {% elseif item.status == 2 %}
+                        {% set icon = 'greenIcon' %}
+                        {% else %}
+                        {% set icon = 'greenIcon' %}
+                        {% endif %}
+
+                        L.marker([{{ item.latitude }}, {{ item.longitude }}], {icon: {{icon}} }).addTo(markersGroup)
+                            .bindPopup("<b><a href='{{ path('app.details', {'id': item.id}) }}'>{{ item.title }}</a></b><br />").openPopup();
+
+                        var popup = L.popup();
+                    </script>
+            </div>
+        </div>
+    </div>
+
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/bg_BG/sdk.js#xfbml=1&version=v4.0&appId=&autoLogAppEvents=1"></script>
+{% endblock %}
+
+{% block og %}
+<meta property="og:url" content="{{ url('app.details', {'id': item.id}) }}" />
+<meta property="og:image" content="{{ item.image is empty ? absolute_url(asset('assets/images/logo.jpg')) : item.image }}" />
+<meta property="og:title" content="{{ item.title }}" />
+<meta property="og:description" content="{{ item.title }}" />
+{% endblock %}
